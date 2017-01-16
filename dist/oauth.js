@@ -2,7 +2,7 @@
 module.exports = {
   oauthd_url: "https://oauth.io",
   oauthd_api: "https://oauth.io/api",
-  version: "phonegap-0.5.0",
+  version: "phonegap-0.5.1",
   options: {}
 };
 
@@ -13,14 +13,21 @@ module.exports = function(Materia) {
   $ = Materia.getJquery();
   apiCall = (function(_this) {
     return function(type, url, params) {
-      var base, defer;
+      var base, defer, opts;
       defer = $.Deferred();
       base = Materia.getOAuthdURL();
-      $.ajax({
+      opts = {
         url: base + url,
-        type: type,
-        data: params
-      }).then((function(data) {
+        type: type
+      };
+      if (type === 'post' || type === 'put') {
+        opts.dataType = "json";
+        opts.contentType = "application/json";
+        opts.data = JSON.stringify(params);
+      } else {
+        opts.data = params;
+      }
+      $.ajax(opts).then((function(data) {
         return defer.resolve(data);
       }), (function(err) {
         return defer.reject(err && err.responseJSON);
@@ -125,11 +132,9 @@ module.exports = function(window, document, jquery, navigator) {
   return Materia;
 };
 
-},{"../config":1,"../tools/cache":9,"../tools/location_operations":12,"../tools/lstorage":13,"../tools/url":15}],4:[function(require,module,exports){
+},{"../config":1,"../tools/cache":9,"../tools/location_operations":11,"../tools/lstorage":12,"../tools/url":14}],4:[function(require,module,exports){
 "use strict";
-var cookies, oauthio_requests, sha1;
-
-cookies = require("../tools/cookies");
+var oauthio_requests, sha1;
 
 oauthio_requests = require("./request");
 
@@ -312,13 +317,11 @@ module.exports = function(Materia) {
           }
         }
       });
-
       wnd.addEventListener("loadstop", function(ev) {
-        if (ev.url.substr(0, 17) == "http://localhost/") {
-          wnd.close();
+        if (ev.url.substr(0, 17) === "http://localhost/") {
+          return wnd.close();
         }
       });
-
       wnd.addEventListener("exit", function() {
         if (!gotmessage) {
           if (defer != null) {
@@ -351,7 +354,7 @@ module.exports = function(Materia) {
   return oauth;
 };
 
-},{"../tools/cookies":10,"../tools/sha1":14,"./providers":5,"./request":6}],5:[function(require,module,exports){
+},{"../tools/sha1":13,"./providers":5,"./request":6}],5:[function(require,module,exports){
 "use strict";
 var config;
 
@@ -873,7 +876,7 @@ module.exports = function(Materia, client_states, providers_api) {
   };
 };
 
-},{"../tools/url":15}],7:[function(require,module,exports){
+},{"../tools/url":14}],7:[function(require,module,exports){
 "use strict";
 module.exports = function(Materia) {
   var $, UserObject, config, lastSave, storage;
@@ -1168,7 +1171,7 @@ module.exports = function(Materia) {
   return exports;
 })();
 
-},{"./lib/api":2,"./lib/core":3,"./lib/oauth":4,"./lib/user":7,"./tools/jquery-lite.js":11}],9:[function(require,module,exports){
+},{"./lib/api":2,"./lib/core":3,"./lib/oauth":4,"./lib/user":7,"./tools/jquery-lite.js":10}],9:[function(require,module,exports){
 "use strict";
 module.exports = {
   init: function(storage, config) {
@@ -1229,61 +1232,6 @@ module.exports = {
 };
 
 },{}],10:[function(require,module,exports){
-"use strict";
-module.exports = {
-  init: function(config, document) {
-    this.config = config;
-    return this.document = document;
-  },
-  create: function(name, value, expires) {
-    var date;
-    this.erase(name);
-    date = new Date();
-    if (expires) {
-      date.setTime(date.getTime() + (expires || 1200) * 1000);
-    } else {
-      date.setFullYear(date.getFullYear() + 3);
-    }
-    expires = "; expires=" + date.toGMTString();
-    this.document.cookie = name + "=" + value + expires + "; path=/";
-  },
-  read: function(name) {
-    var c, ca, i, nameEQ;
-    nameEQ = name + "=";
-    ca = this.document.cookie.split(";");
-    i = 0;
-    while (i < ca.length) {
-      c = ca[i];
-      while (c.charAt(0) === " ") {
-        c = c.substring(1, c.length);
-      }
-      if (c.indexOf(nameEQ) === 0) {
-        return c.substring(nameEQ.length, c.length);
-      }
-      i++;
-    }
-    return null;
-  },
-  erase: function(name) {
-    var date;
-    date = new Date();
-    date.setTime(date.getTime() - 86400000);
-    this.document.cookie = name + "=; expires=" + date.toGMTString() + "; path=/";
-  },
-  eraseFrom: function(prefix) {
-    var cname, cookie, cookies, j, len;
-    cookies = this.document.cookie.split(";");
-    for (j = 0, len = cookies.length; j < len; j++) {
-      cookie = cookies[j];
-      cname = cookie.split("=")[0].trim();
-      if (cname.substr(0, prefix.length) === prefix) {
-        this.erase(cname);
-      }
-    }
-  }
-};
-
-},{}],11:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.1 -attributes,-attributes/attr,-attributes/classes,-attributes/prop,-attributes/support,-attributes/val,-css/addGetHookIf,-css/curCSS,-css/defaultDisplay,-css/hiddenVisibleSelectors,-css/support,-css/swap,-css/var,-css/var/cssExpand,-css/var/getStyles,-css/var/isHidden,-css/var/rmargin,-css/var/rnumnonpx,-css,-effects,-effects/Tween,-effects/animatedSelector,-dimensions,-offset,-data/var/data_user,-deprecated,-event/alias,-event/support,-intro,-manipulation/_evalUrl,-manipulation/support,-manipulation/var,-manipulation/var/rcheckableType,-manipulation,-outro,-queue,-queue/delay,-selector-native,-selector-sizzle,-sizzle/dist,-sizzle/dist/sizzle,-sizzle/dist/min,-sizzle/test,-sizzle/test/jquery,-traversing,-traversing/findFilter,-traversing/var/rneedsContext,-traversing/var,-wrap,-exports,-exports/amd
  * http://jquery.com/
@@ -4969,7 +4917,7 @@ return jQuery;
 return jQuery;
 }));
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 module.exports = function(document) {
   return {
@@ -4988,7 +4936,7 @@ module.exports = function(document) {
   };
 };
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 var useCache;
 
@@ -5019,9 +4967,7 @@ module.exports = {
     date = new Date();
     localStorage.setItem(name, value);
     useCache(function(cacheobj, cacheupdate) {
-      cacheobj[name] = expires != null ? expires : date.getTime() + (expires || 1200) * {
-        1000: false
-      };
+      cacheobj[name] = expires ? date.getTime() + (expires || 1200) * 1000 : false;
       return cacheupdate();
     });
   },
@@ -5032,7 +4978,7 @@ module.exports = {
       }
       if (cacheobj[name] === false) {
         return localStorage.getItem(name);
-      } else if ((new Date()).getTime() < cacheobj[name]) {
+      } else if ((new Date()).getTime() > cacheobj[name]) {
         localStorage.removeItem(name);
         delete cacheobj[name];
         cacheupdate();
@@ -5065,7 +5011,7 @@ module.exports = {
   }
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var b64pad, hexcase;
 
 hexcase = 0;
@@ -5363,7 +5309,7 @@ module.exports = {
   }
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function(document) {
   return {
     getAbsUrl: function(url) {

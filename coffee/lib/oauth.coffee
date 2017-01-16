@@ -1,6 +1,5 @@
 "use strict"
 
-cookies = require("../tools/cookies")
 oauthio_requests = require("./request")
 sha1 = require("../tools/sha1")
 
